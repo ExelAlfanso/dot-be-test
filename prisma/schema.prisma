@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                 String              @id @default(uuid())
+  email              String              @unique
+  password           String
+  role               Role                @default(USER)
+  createdAt          DateTime            @default(now())
+  username           String              @unique
+  products           Product[]
+  inventoryMovements InventoryMovement[]
+}
+
+model Product {
+  id                 String              @id @default(uuid())
+  name               String
+  description        String?
+  price              Float
+  stock              Int                 @default(0)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  createdBy          String
+  user               User                @relation(fields: [createdBy], references: [id])
+  inventoryMovements InventoryMovement[]
+}
+
+model InventoryMovement {
+  id        String        @id @default(uuid())
+  product   Product       @relation(fields: [productId], references: [id])
+  productId String
+  type      InventoryType
+  quantity  Int
+  reference String?
+  createdBy String
+  user      User          @relation(fields: [createdBy], references: [id])
+  createdAt DateTime      @default(now())
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum InventoryType {
+  IN
+  OUT
+  ADJUSTMENT
+}
