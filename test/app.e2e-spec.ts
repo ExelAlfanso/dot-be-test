@@ -44,7 +44,8 @@ describe('App Integration (e2e)', () => {
         .get('/api/products')
         .expect(200);
 
-      const data = extractData(response);
+      const body = response.body.data || response.body;
+      const data = body.data || body;
       expect(Array.isArray(data)).toBe(true);
     });
   });
@@ -73,7 +74,8 @@ describe('App Integration (e2e)', () => {
         .get('/api/products')
         .expect(200);
 
-      const products = extractData(listRes);
+      const body = listRes.body.data || listRes.body;
+      const products = body.data || body;
       const firstProductId = products[0]?.id;
 
       if (firstProductId) {

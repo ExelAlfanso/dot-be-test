@@ -117,9 +117,12 @@ Tests product management functionality:
   - Missing required fields validation
   - Invalid data types handling
   - Stock maximum validation
-- **GET /api/products**: List all products
+- **GET /api/products**: List all products with pagination
+  - Paginated response with data and meta (total, page, limit, totalPages)
+  - Respects page and limit query params (default: page=1, limit=10)
+  - Max limit enforcement (100 items per page)
   - Retrieved without authentication
-  - Empty array when no products exist
+  - Handles multiple pages correctly
 - **GET /api/products/:id**: Get single product
   - Successful retrieval
   - 404 for non-existent product
@@ -148,6 +151,12 @@ Tests inventory management functionality:
   - Non-existent product (404)
   - Invalid quantity validation
   - Missing required fields
+- **GET /api/inventory-movements**: List all inventory movements with pagination
+  - Paginated response with data and meta (total, page, limit, totalPages)
+  - Respects page and limit query params (default: page=1, limit=10)
+  - Max limit enforcement (100 items per page)
+  - Both USER and ADMIN can view
+  - Authentication requirement
 - **GET /api/inventory-movements/product/:productId**: Get inventory history
   - Both USER and ADMIN can view
   - Empty array for product with no movements
@@ -160,16 +169,14 @@ Tests inventory management functionality:
 
 Integration tests covering complete user journeys:
 
-- **Complete User Journey**: Full workflow from registration to inventory management
-  - Register → Login → Create Product → Upgrade to ADMIN → Add Inventory → View History
-- **Multi-User Ownership**: Product ownership enforcement
-  - Multiple users creating products
-  - Cannot update/delete other users' products
-  - Ownership validation across users
-- **Role-Based Access Control**: RBAC enforcement
-  - USER can view inventory but cannot modify
-  - ADMIN has full inventory permissions
-  - All inventory operations (IN/OUT/ADJUSTMENT) restricted to ADMIN
+- **Basic Endpoints**: Public access and health checks
+  - Public product list access (with pagination)
+  - Health check endpoint
+- **Complete Auth Flow**: Full workflow from login to protected endpoints
+  - Login → Get Profile → Access Protected Endpoints
+  - Token authentication flow
+  - Profile verification
+  - Inventory history access with authentication
 
 ### Running Tests
 
@@ -209,6 +216,7 @@ The test suite covers:
 - **Validation**: DTO validation, data types, required fields
 - **Ownership**: User-product ownership enforcement
 - **Inventory**: Stock management (IN/OUT/ADJUSTMENT)
+- **Pagination**: Query params, response structure, limit enforcement
 - **Error Handling**: 400, 401, 403, 404 responses
 - **Integration**: Complete workflows and multi-user scenarios
 

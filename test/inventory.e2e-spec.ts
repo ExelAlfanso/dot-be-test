@@ -177,13 +177,30 @@ describe('Inventory Movements (e2e)', () => {
   });
 
   describe('GET /api/inventory-movements', () => {
+    it('should return paginated response with default params', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/inventory-movements')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+
+      const body = response.body.data || response.body;
+      expect(body).toHaveProperty('data');
+      expect(body).toHaveProperty('meta');
+      expect(Array.isArray(body.data)).toBe(true);
+      expect(body.meta).toHaveProperty('total');
+      expect(body.meta).toHaveProperty('page', 1);
+      expect(body.meta).toHaveProperty('limit', 10);
+      expect(body.meta).toHaveProperty('totalPages');
+    });
+
     it('ADMIN can list all movements', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/inventory-movements')
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
-      const data = extractData(response);
+      const body = response.body.data || response.body;
+      const data = body.data || body;
       expect(Array.isArray(data)).toBe(true);
     });
 
@@ -193,8 +210,31 @@ describe('Inventory Movements (e2e)', () => {
         .set('Authorization', `Bearer ${userToken}`)
         .expect(200);
 
-      const data = extractData(res);
+      const body = res.body.data || res.body;
+      const data = body.data || body;
       expect(Array.isArray(data)).toBe(true);
+    });
+
+    it('should respect page and limit query params', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/inventory-movements?page=1&limit=5')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+
+      const body = response.body.data || response.body;
+      expect(body.data.length).toBeLessThanOrEqual(5);
+      expect(body.meta.page).toBe(1);
+      expect(body.meta.limit).toBe(5);
+    });
+
+    it('should limit results to max 100 per page', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/inventory-movements?limit=150')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+
+      const body = response.body.data || response.body;
+      expect(body.meta.limit).toBeLessThanOrEqual(100);
     });
   });
 });

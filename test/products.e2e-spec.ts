@@ -48,12 +48,29 @@ describe('Products (e2e)', () => {
   });
 
   describe('GET /api/products (seeded data)', () => {
+    it('should return paginated response with default params', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/products')
+        .expect(200);
+
+      const body = response.body.data || response.body;
+      expect(body).toHaveProperty('data');
+      expect(body).toHaveProperty('meta');
+      expect(Array.isArray(body.data)).toBe(true);
+      expect(body.meta).toHaveProperty('total');
+      expect(body.meta).toHaveProperty('page', 1);
+      expect(body.meta).toHaveProperty('limit', 10);
+      expect(body.meta).toHaveProperty('totalPages');
+      expect(body.data.length).toBeGreaterThanOrEqual(8);
+    });
+
     it('should list all 8 seeded products', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/products')
         .expect(200);
 
-      const data = extractData(response);
+      const body = response.body.data || response.body;
+      const data = body.data || body;
       expect(Array.isArray(data)).toBe(true);
       expect(data.length).toBeGreaterThanOrEqual(8);
       expect(data[0]).toHaveProperty('id');
@@ -61,22 +78,54 @@ describe('Products (e2e)', () => {
       expect(data[0]).toHaveProperty('price');
     });
 
+    it('should respect page and limit query params', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/products?page=1&limit=5')
+        .expect(200);
+
+      const body = response.body.data || response.body;
+      expect(body.data.length).toBeLessThanOrEqual(5);
+      expect(body.meta.page).toBe(1);
+      expect(body.meta.limit).toBe(5);
+    });
+
+    it('should handle page 2 correctly', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/products?page=2&limit=5')
+        .expect(200);
+
+      const body = response.body.data || response.body;
+      expect(body.meta.page).toBe(2);
+      expect(body.meta.limit).toBe(5);
+    });
+
     it('should contain expected seeded products', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/products')
         .expect(200);
 
-      const data = extractData(response);
+      const body = response.body.data || response.body;
+      const data = body.data || body;
       const productNames = data.map((p) => p.name);
       expect(productNames).toContain('Laptop Pro 15"');
       expect(productNames).toContain('Wireless Mouse');
+    });
+
+    it('should limit results to max 100 per page', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/products?limit=150')
+        .expect(200);
+
+      const body = response.body.data || response.body;
+      expect(body.meta.limit).toBeLessThanOrEqual(100);
     });
   });
 
   describe('PATCH /api/products/:id (ownership enforcement)', () => {
     it('should allow ADMIN to update seeded admin product', async () => {
       const listRes = await request(app.getHttpServer()).get('/api/products');
-      const products = extractData(listRes);
+      const body = listRes.body.data || listRes.body;
+      const products = body.data || body;
       const adminProduct = products.find(
         (p) => p.name === 'Mechanical Keyboard',
       );
@@ -93,7 +142,8 @@ describe('Products (e2e)', () => {
 
     it('should prevent USER from updating ADMIN product', async () => {
       const listRes = await request(app.getHttpServer()).get('/api/products');
-      const products = extractData(listRes);
+      const body = listRes.body.data || listRes.body;
+      const products = body.data || body;
       const adminProduct = products.find(
         (p) => p.name === 'Mechanical Keyboard',
       );
@@ -124,7 +174,8 @@ describe('Products (e2e)', () => {
   describe('DELETE /api/products/:id (ownership enforcement)', () => {
     it('should prevent USER from deleting ADMIN product', async () => {
       const listRes = await request(app.getHttpServer()).get('/api/products');
-      const products = extractData(listRes);
+      const body = listRes.body.data || listRes.body;
+      const products = body.data || body;
       const adminProduct = products.find(
         (p) => p.name === 'Mechanical Keyboard',
       );
