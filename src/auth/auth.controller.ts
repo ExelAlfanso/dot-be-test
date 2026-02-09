@@ -10,7 +10,7 @@ import {
 import {
   ErrorResponseDto,
   UnauthorizedResponseDto,
-} from 'src/common/dtos/error-response.dto';
+} from '../common/dtos/error-response.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
