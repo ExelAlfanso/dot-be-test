@@ -215,3 +215,4 @@ Each test file follows this structure:
 - Environment variables must be set (DATABASE_URL, JWT_SECRET)
 - bcrypt is used for password hashing in test setup
 - All tests use the `/api` prefix as configured in main.ts
+- Seed the database with `npm run prisma:seed` when you need initial data
