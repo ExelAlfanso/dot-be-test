@@ -12,13 +12,13 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
+import { JwtAuthGuard } from '../common/guards/jwt.guard';
 import { RoleGuard } from 'src/auth/role/role.guard';
 import { Roles } from 'src/auth/role/roles.decorator';
 import {
   ErrorResponseDto,
   UnauthorizedResponseDto,
-} from 'src/common/dtos/error-response.dto';
+} from '../common/dtos/error-response.dto';
 import { ProfileDto } from './dtos/profile.dto';
 import { UpdateProfileDto } from './dtos/update-profile.dto';
 import { ProfilesService } from './profiles.service';

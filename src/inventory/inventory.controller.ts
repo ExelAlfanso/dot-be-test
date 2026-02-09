@@ -14,7 +14,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { InventoryService } from './inventory.service';
-import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
+import { JwtAuthGuard } from '../common/guards/jwt.guard';
 import { RoleGuard } from 'src/auth/role/role.guard';
 import { Roles } from 'src/auth/role/roles.decorator';
 import { InventoryMovementResponseDto } from './dtos/inventory-response.dto';
@@ -23,7 +23,7 @@ import {
   UnauthorizedResponseDto,
   ForbiddenResponseDto,
   NotFoundResponseDto,
-} from 'src/common/dtos/error-response.dto';
+} from '../common/dtos/error-response.dto';
 import { InventoryMovementDto } from './dtos/inventory.dto';
 
 @ApiTags('Inventory Movements')

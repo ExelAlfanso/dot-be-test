@@ -15,7 +15,7 @@ import {
   ApiResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
+import { JwtAuthGuard } from '../common/guards/jwt.guard';
 import { RoleGuard } from 'src/auth/role/role.guard';
 import { CreateProductDto } from './dtos/create-product.dto';
 import { UpdateProductDto } from './dtos/update-product.dto';
@@ -26,7 +26,7 @@ import {
   UnauthorizedResponseDto,
   ForbiddenResponseDto,
   NotFoundResponseDto,
-} from 'src/common/dtos/error-response.dto';
+} from '../common/dtos/error-response.dto';
 
 @ApiTags('Products')
 @Controller('products')
