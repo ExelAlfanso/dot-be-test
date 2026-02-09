@@ -40,7 +40,7 @@ async function bootstrap() {
     .addTag('Health', 'Health check endpoint')
     .build();
   const documentFactory = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, documentFactory, {
+  SwaggerModule.setup('api/docs', app, documentFactory, {
     customJs: [
       'https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js',
       'https://unpkg.com/swagger-ui-dist/swagger-ui-standalone-preset.js',
