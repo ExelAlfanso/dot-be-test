@@ -39,7 +39,7 @@ async function bootstrap() {
     .addTag('Inventory Movements', 'Inventory movement endpoints')
     .addTag('Health', 'Health check endpoint')
     .build();
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
+  const documentFactory = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, documentFactory);
 
   await app.listen(process.env.PORT ?? 3000);
