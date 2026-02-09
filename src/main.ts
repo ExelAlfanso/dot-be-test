@@ -41,10 +41,11 @@ async function bootstrap() {
     .build();
   const documentFactory = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, documentFactory, {
-    swaggerOptions: {
-      persistAuthorization: true,
-    },
-    customSiteTitle: 'Inventory Management System API Docs',
+    customJs: [
+      'https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js',
+      'https://unpkg.com/swagger-ui-dist/swagger-ui-standalone-preset.js',
+    ],
+    customCssUrl: 'https://unpkg.com/swagger-ui-dist/swagger-ui.css',
   });
 
   await app.listen(process.env.PORT ?? 3000);

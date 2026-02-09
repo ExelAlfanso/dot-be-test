@@ -17,4 +17,9 @@ export class AppController {
   getHealth(): string {
     return this.appService.getHealth();
   }
+
+  @Get('/')
+  getHello(): string {
+    return this.appService.getHello();
+  }
 }

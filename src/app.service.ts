@@ -5,4 +5,7 @@ export class AppService {
   getHealth(): string {
     return 'OK';
   }
+  getHello(): string {
+    return 'Hello World';
+  }
 }
