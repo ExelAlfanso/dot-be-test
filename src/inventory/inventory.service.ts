@@ -4,15 +4,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { InventoryInDto } from './dtos/inventory-in.dto';
-import { InventoryOutDto } from './dtos/inventory-out.dto';
 import { InventoryMovementDto } from './dtos/inventory.dto';
 
 @Injectable()
 export class InventoryService {
   constructor(private prisma: PrismaService) {}
 
-  async addInventory(dto: InventoryInDto, userId: string) {
+  async addInventory(dto: InventoryMovementDto, userId: string) {
     const product = await this.prisma.product.findUnique({
       where: { id: dto.productId },
     });
@@ -40,7 +38,7 @@ export class InventoryService {
     });
   }
 
-  async removeInventory(dto: InventoryOutDto, userId: string) {
+  async removeInventory(dto: InventoryMovementDto, userId: string) {
     const product = await this.prisma.product.findUnique({
       where: { id: dto.productId },
     });
@@ -86,7 +84,7 @@ export class InventoryService {
       return { ...movement, product: updatedProduct };
     });
   }
-  async adjustInventory(dto: InventoryOutDto, userId: string) {
+  async adjustInventory(dto: InventoryMovementDto, userId: string) {
     const product = await this.prisma.product.findUnique({
       where: { id: dto.productId },
     });
