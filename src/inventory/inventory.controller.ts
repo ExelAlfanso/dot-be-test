@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Post,
+  Query,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -12,6 +13,7 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { InventoryService } from './inventory.service';
 import { JwtAuthGuard } from '../common/guards/jwt.guard';
@@ -25,6 +27,7 @@ import {
   NotFoundResponseDto,
 } from '../common/dtos/error-response.dto';
 import { InventoryMovementDto } from './dtos/inventory.dto';
+import { PaginatedInventoryMovementsResponseDto } from './dtos/paginated-inventory-response.dto';
 
 @ApiTags('Inventory Movements')
 @Controller('inventory-movements')
@@ -68,11 +71,25 @@ export class InventoryController {
   @Get()
   @Roles('USER', 'ADMIN')
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'List inventory movements' })
+  @ApiOperation({ summary: 'List inventory movements with pagination' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    example: 1,
+    description: 'Page number (starts from 1, defaults to 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    example: 10,
+    description: 'Number of items per page (1-100, defaults to 10)',
+  })
   @ApiResponse({
     status: 200,
-    description: 'Returns inventory movements',
-    type: [InventoryMovementResponseDto],
+    description: 'Returns paginated list of inventory movements with metadata',
+    type: PaginatedInventoryMovementsResponseDto,
   })
   @ApiResponse({
     status: 401,
@@ -84,8 +101,11 @@ export class InventoryController {
     description: 'Forbidden - Invalid role',
     type: ForbiddenResponseDto,
   })
-  getAllMovements() {
-    return this.inventoryService.getAllMovements();
+  getAllMovements(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ) {
+    return this.inventoryService.getAllMovements(page, limit);
   }
 
   @Get('product/:productId')

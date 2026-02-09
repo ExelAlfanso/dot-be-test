@@ -29,18 +29,36 @@ export class ProductsService {
     });
   }
 
-  async findAll() {
-    return this.prisma.product.findMany({
-      include: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            email: true,
+  async findAll(page = 1, limit = 10) {
+    const safePage = Math.max(page, 1);
+    const safeLimit = Math.min(Math.max(limit, 1), 100);
+    const skip = (safePage - 1) * safeLimit;
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.product.findMany({
+        skip,
+        take: safeLimit,
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              email: true,
+            },
           },
         },
+      }),
+      this.prisma.product.count(),
+    ]);
+
+    return {
+      data: items,
+      meta: {
+        total,
+        page: safePage,
+        limit: safeLimit,
+        totalPages: Math.ceil(total / safeLimit),
       },
-    });
+    };
   }
 
   async findOne(id: string) {

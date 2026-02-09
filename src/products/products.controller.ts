@@ -8,12 +8,14 @@ import {
   UseGuards,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt.guard';
 import { RoleGuard } from '../auth/role/role.guard';
@@ -27,6 +29,7 @@ import {
   ForbiddenResponseDto,
   NotFoundResponseDto,
 } from '../common/dtos/error-response.dto';
+import { PaginatedProductsResponseDto } from './dtos/paginated-products-response.dto';
 
 @ApiTags('Products')
 @Controller('products')
@@ -58,14 +61,28 @@ export class ProductsController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all products' })
+  @ApiOperation({ summary: 'Get all products with pagination' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    example: 1,
+    description: 'Page number (starts from 1, defaults to 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    example: 10,
+    description: 'Number of items per page (1-100, defaults to 10)',
+  })
   @ApiResponse({
     status: 200,
-    description: 'Returns list of products',
-    type: [ProductResponseDto],
+    description: 'Returns paginated list of products with metadata',
+    type: PaginatedProductsResponseDto,
   })
-  findAll() {
-    return this.productsService.findAll();
+  findAll(@Query('page') page?: number, @Query('limit') limit?: number) {
+    return this.productsService.findAll(page, limit);
   }
 
   @Get(':id')
@@ -88,7 +105,7 @@ export class ProductsController {
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles('ADMIN')
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Update product' })
+  @ApiOperation({ summary: 'Update product (ADMIN only)' })
   @ApiResponse({
     status: 200,
     description: 'Product successfully updated',
@@ -121,7 +138,7 @@ export class ProductsController {
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles('ADMIN')
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Delete product' })
+  @ApiOperation({ summary: 'Delete product (ADMIN only)' })
   @ApiResponse({
     status: 200,
     description: 'Product successfully deleted',

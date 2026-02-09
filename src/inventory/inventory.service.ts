@@ -77,8 +77,9 @@ export class InventoryService {
         },
       });
 
-      const updatedProduct = await tx.product.findUnique({
+      const updatedProduct = await tx.product.update({
         where: { id: dto.productId },
+        data: { stock: { decrement: dto.quantity } },
       });
 
       return { ...movement, product: updatedProduct };
@@ -133,11 +134,28 @@ export class InventoryService {
     throw new BadRequestException('Invalid inventory movement type');
   }
 
-  async getAllMovements() {
-    return this.prisma.inventoryMovement.findMany({
-      orderBy: { createdAt: 'desc' },
-      include: { product: true },
-    });
+  async getAllMovements(page = 1, limit = 10) {
+    const safePage = Math.max(page, 1);
+    const safeLimit = Math.min(Math.max(limit, 1), 100);
+    const skip = (safePage - 1) * safeLimit;
+    const [items, total] = await Promise.all([
+      this.prisma.inventoryMovement.findMany({
+        orderBy: { createdAt: 'desc' },
+        include: { product: true },
+        skip,
+        take: safeLimit,
+      }),
+      this.prisma.inventoryMovement.count(),
+    ]);
+    return {
+      data: items,
+      meta: {
+        total,
+        page: safePage,
+        limit: safeLimit,
+        totalPages: Math.ceil(total / safeLimit),
+      },
+    };
   }
 
   async getProductInventoryHistory(productId: string) {
