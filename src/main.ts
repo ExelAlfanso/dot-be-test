@@ -40,7 +40,12 @@ async function bootstrap() {
     .addTag('Health', 'Health check endpoint')
     .build();
   const documentFactory = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, documentFactory);
+  SwaggerModule.setup('docs', app, documentFactory, {
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+    customSiteTitle: 'Inventory Management System API Docs',
+  });
 
   await app.listen(process.env.PORT ?? 3000);
 }
