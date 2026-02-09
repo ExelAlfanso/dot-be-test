@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -20,11 +19,7 @@ export class InventoryService {
     if (!product) {
       throw new NotFoundException('Product not found');
     }
-    if (product.createdBy !== userId) {
-      throw new ForbiddenException(
-        'You can only manage inventory for your own products',
-      );
-    }
+
     return this.prisma.$transaction(async (tx) => {
       const movement = await tx.inventoryMovement.create({
         data: {
@@ -52,11 +47,7 @@ export class InventoryService {
     if (!product) {
       throw new NotFoundException('Product not found');
     }
-    if (product.createdBy !== userId) {
-      throw new ForbiddenException(
-        'You can only manage inventory for your own products',
-      );
-    }
+
     if (product.stock < dto.quantity) {
       throw new BadRequestException(
         `Insufficient stock. Available: ${product.stock}, Requested: ${dto.quantity}`,
@@ -103,7 +94,7 @@ export class InventoryService {
     if (!product) {
       throw new NotFoundException('Product not found');
     }
-    const newStock = product.stock + dto.quantity;
+    const newStock = dto.quantity;
     if (newStock < 0) {
       throw new BadRequestException(
         `Insufficient stock. Available: ${product.stock}, Requested adjustment: ${dto.quantity}`,

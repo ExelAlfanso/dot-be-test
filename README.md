@@ -69,24 +69,16 @@ Tests product management functionality:
 
 Tests inventory management functionality:
 
-- **POST /api/inventory/in**: Add inventory stock
-  - ADMIN can add inventory
+- **POST /api/inventory-movements**: Create inventory movement
+  - Type can be IN, OUT, or ADJUSTMENT
+  - ADMIN only
   - With and without optional reference
+  - Insufficient stock validation for OUT/ADJUSTMENT (400)
   - USER forbidden (403)
   - Non-existent product (404)
   - Invalid quantity validation
   - Missing required fields
-- **POST /api/inventory/out**: Remove inventory stock
-  - ADMIN can remove inventory
-  - Insufficient stock validation (400)
-  - USER forbidden (403)
-  - Authentication requirement
-- **POST /api/inventory/adjustment**: Adjust inventory
-  - ADMIN can adjust inventory
-  - Required reason field validation
-  - USER forbidden (403)
-  - Authentication requirement
-- **GET /api/inventory/product/:productId**: Get inventory history
+- **GET /api/inventory-movements/product/:productId**: Get inventory history
   - Both USER and ADMIN can view
   - Empty array for product with no movements
   - 404 for non-existent product
