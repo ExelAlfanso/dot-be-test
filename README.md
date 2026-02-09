@@ -20,34 +20,46 @@ NestJS-based inventory management API with JWT authentication, role-based access
   - Register: `POST /api/auth/register`
   - Login: `POST /api/auth/login`
 
-## Design Patterns
+## Architecture and Folder Structure
 
-### Role-Based Access Control (RBAC) with Decorator Pattern
+- `src/`
+  - `main.ts` and `app.module.ts`: application bootstrap and root module
+  - `auth/`: authentication module, JWT strategy, roles, and guards
+  - `products/`: product module with controller, service, and DTOs
+  - `inventory/`: inventory movement module with controller, service, and DTOs
+  - `profiles/`: profile module with controller, service, and DTOs
+  - `prisma/`: Prisma module and service
+  - `common/`: shared guards, filters, interceptors, and DTOs
+- `prisma/`
+  - `schema.prisma`: database schema
+  - `migrations/`: migration history
+  - `seed.ts`: seed script
+- `test/`: end-to-end tests
 
-This project implements **Role-Based Access Control (RBAC)** combined with the **Decorator Pattern** as the primary architectural pattern for authorization.
+## Architecture Pattern
 
-**Pattern Overview:**
+This project uses a Modular NestJS Architecture combined with:
 
-- Custom `@Roles()` decorator marks which roles are allowed to access specific endpoints
-- Custom `RoleGuard` intercepts requests and validates user roles before controller methods execute
-- Roles are stored in the JWT token and checked on each protected request
+- Service Layer Pattern
+- Repository Pattern (via Prisma)
+- RBAC with Decorator Pattern
+- Separation of Concerns per domain module
 
-**Why This Pattern?**
+**Why this structure**
 
-1.  **Separation of Concerns**: Authorization logic is decoupled from business logic, making controllers cleaner and more maintainable
-2.  **Reusability**: The same decorators and guards can be applied to any endpoint without code duplication
-3.  **Flexibility**: New roles can be added easily without modifying existing guard implementations
-4.  **Declarative Syntax**: The `@Roles('ADMIN')` syntax is expressive and immediately shows endpoint requirements
-5.  **Scalability**: As the application grows, RBAC provides a consistent and unified authorization approach for all endpoints
+- Feature modules keep controllers, services, and DTOs scoped to one domain
+- `common/` avoids duplicated guards, filters, interceptors, and DTOs
+- `prisma/` centralizes the data layer and keeps schema, migrations, and seed in one place
+- `test/` separates e2e tests from production code
+- The layout scales as new domains are added without mixing responsibilities
 
-**Implementation Details:**
+## Why This Architecture Was Chosen
 
-- `@Roles()` decorator defined in `src/auth/role/roles.decorator.ts`
-- `RoleGuard` implemented in `src/auth/role/role.guard.ts`
-- Guards are applied globally or per-route to protect sensitive operations
-- Ensures only authorized users can perform inventory modifications, product updates, and administrative tasks
+The project intentionally avoids full Clean Architecture to keep:
 
-This pattern is critical for security in the Inventory Management System, where different user roles (USER vs ADMIN) have different permissions for product management and inventory operations.
+- Development velocity high
+- Folder structure understandable for small teams
+- Complexity proportional to project scope
 
 ## Notes
 
