@@ -16,11 +16,11 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt.guard';
-import { RoleGuard } from 'src/auth/role/role.guard';
+import { RoleGuard } from '../auth/role/role.guard';
 import { CreateProductDto } from './dtos/create-product.dto';
 import { UpdateProductDto } from './dtos/update-product.dto';
 import { ProductsService } from './products.service';
-import { Roles } from 'src/auth/role/roles.decorator';
+import { Roles } from '../auth/role/roles.decorator';
 import { ProductResponseDto } from './dtos/product-response.dto';
 import {
   UnauthorizedResponseDto,

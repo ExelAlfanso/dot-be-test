@@ -13,8 +13,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt.guard';
-import { RoleGuard } from 'src/auth/role/role.guard';
-import { Roles } from 'src/auth/role/roles.decorator';
+import { RoleGuard } from '../auth/role/role.guard';
+import { Roles } from '../auth/role/roles.decorator';
 import {
   ErrorResponseDto,
   UnauthorizedResponseDto,
