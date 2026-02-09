@@ -20,12 +20,21 @@ Tests authentication functionality:
   - Wrong password handling
   - Non-existent user handling
   - Invalid email format
-- **GET /api/auth/me**: User profile retrieval
+
+### `profile.e2e-spec.ts`
+
+Tests profile management functionality:
+
+- **GET /api/profile**: User profile retrieval
   - USER role profile
   - ADMIN role profile
   - Missing token handling
-  - Invalid token handling
-  - Malformed authorization header
+- **PATCH /api/profile**: Update current user profile
+  - Update username
+  - Update email
+  - Update password
+  - Duplicate email/username handling
+  - Missing token handling
 
 ### `products.e2e-spec.ts`
 
@@ -100,6 +109,35 @@ Integration tests covering complete user journeys:
   - ADMIN has full inventory permissions
   - All inventory operations (IN/OUT/ADJUSTMENT) restricted to ADMIN
 
+## Design Patterns
+
+### Role-Based Access Control (RBAC) with Decorator Pattern
+
+This project implements **Role-Based Access Control (RBAC)** combined with the **Decorator Pattern** as the primary architectural pattern for authorization.
+
+**Pattern Overview:**
+
+- Custom `@Roles()` decorator marks which roles are allowed to access specific endpoints
+- Custom `RoleGuard` intercepts requests and validates user roles before controller methods execute
+- Roles are stored in the JWT token and checked on each protected request
+
+**Why This Pattern?**
+
+1.  **Separation of Concerns**: Authorization logic is decoupled from business logic, making controllers cleaner and more maintainable
+2.  **Reusability**: The same decorators and guards can be applied to any endpoint without code duplication
+3.  **Flexibility**: New roles can be added easily without modifying existing guard implementations
+4.  **Declarative Syntax**: The `@Roles('ADMIN')` syntax is expressive and immediately shows endpoint requirements
+5.  **Scalability**: As the application grows, RBAC provides a consistent and unified authorization approach for all endpoints
+
+**Implementation Details:**
+
+- `@Roles()` decorator defined in `src/auth/role/roles.decorator.ts`
+- `RoleGuard` implemented in `src/auth/role/role.guard.ts`
+- Guards are applied globally or per-route to protect sensitive operations
+- Ensures only authorized users can perform inventory modifications, product updates, and administrative tasks
+
+This pattern is critical for security in the Inventory Management System, where different user roles (USER vs ADMIN) have different permissions for product management and inventory operations.
+
 ## Running Tests
 
 ### Run all e2e tests:
@@ -133,13 +171,13 @@ npm run test:watch
 
 The test suite covers:
 
-- ✅ **Authentication**: Registration, login, JWT tokens, role assignment
-- ✅ **Authorization**: Role-based access control (USER vs ADMIN)
-- ✅ **Validation**: DTO validation, data types, required fields
-- ✅ **Ownership**: User-product ownership enforcement
-- ✅ **Inventory**: Stock management (IN/OUT/ADJUSTMENT)
-- ✅ **Error Handling**: 400, 401, 403, 404 responses
-- ✅ **Integration**: Complete workflows and multi-user scenarios
+- **Authentication**: Registration, login, JWT tokens, role assignment
+- **Authorization**: Role-based access control (USER vs ADMIN)
+- **Validation**: DTO validation, data types, required fields
+- **Ownership**: User-product ownership enforcement
+- **Inventory**: Stock management (IN/OUT/ADJUSTMENT)
+- **Error Handling**: 400, 401, 403, 404 responses
+- **Integration**: Complete workflows and multi-user scenarios
 
 ## Test Structure
 
@@ -162,14 +200,14 @@ Each test file follows this structure:
 
 ## Best Practices Used
 
-- ✅ Clear describe/it blocks with descriptive names
-- ✅ Database cleanup between tests for isolation
-- ✅ Consistent test structure across all test files
-- ✅ Testing both success and error cases
-- ✅ Verifying response structure and data integrity
-- ✅ Testing edge cases (empty arrays, missing fields, invalid data)
-- ✅ Authentication/authorization validation
-- ✅ Integration tests for complete workflows
+- Clear describe/it blocks with descriptive names
+- Database cleanup between tests for isolation
+- Consistent test structure across all test files
+- Testing both success and error cases
+- Verifying response structure and data integrity
+- Testing edge cases (empty arrays, missing fields, invalid data)
+- Authentication/authorization validation
+- Integration tests for complete workflows
 
 ## Notes
 

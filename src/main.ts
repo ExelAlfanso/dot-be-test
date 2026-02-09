@@ -33,9 +33,11 @@ async function bootstrap() {
       },
       'JWT-auth',
     )
-    .addTag('auth', 'Authentication endpoints')
-    .addTag('products', 'Product management endpoints')
-    .addTag('inventory', 'Inventory movement endpoints')
+    .addTag('Auth', 'Authentication endpoints')
+    .addTag('Profile', 'Profile management endpoints')
+    .addTag('Products', 'Product management endpoints')
+    .addTag('Inventory Movements', 'Inventory movement endpoints')
+    .addTag('Health', 'Health check endpoint')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);

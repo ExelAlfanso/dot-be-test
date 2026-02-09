@@ -5,7 +5,7 @@ import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { TransformInterceptor } from '../src/interceptors/transform.intercepter';
 
-describe('Auth (e2e)', () => {
+describe('Profile (e2e)', () => {
   let app: INestApplication;
 
   const extractData = (response: request.Response) =>
@@ -43,25 +43,33 @@ describe('Auth (e2e)', () => {
     await app.close();
   });
 
-  describe('POST /api/auth/login (seeded users)', () => {
-    it('should login as USER', async () => {
+  describe('GET /api/profile', () => {
+    it('should get USER profile', async () => {
       const token = await loginAs('user@test.com', 'password123');
-      expect(token).toBeDefined();
+
+      const response = await request(app.getHttpServer())
+        .get('/api/profile')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+
+      const data = extractData(response);
+      expect(data).toHaveProperty('role', 'USER');
     });
 
-    it('should login as ADMIN', async () => {
+    it('should get ADMIN profile', async () => {
       const token = await loginAs('admin@test.com', 'admin123');
-      expect(token).toBeDefined();
+
+      const response = await request(app.getHttpServer())
+        .get('/api/profile')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+
+      const data = extractData(response);
+      expect(data).toHaveProperty('role', 'ADMIN');
     });
 
-    it('should reject invalid password', async () => {
-      await request(app.getHttpServer())
-        .post('/api/auth/login')
-        .send({
-          email: 'user@test.com',
-          password: 'wrongpass',
-        })
-        .expect(401);
+    it('should reject missing token', async () => {
+      await request(app.getHttpServer()).get('/api/profile').expect(401);
     });
   });
 });

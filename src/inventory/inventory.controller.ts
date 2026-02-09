@@ -25,10 +25,8 @@ import {
   NotFoundResponseDto,
 } from 'src/common/dtos/error-response.dto';
 import { InventoryMovementDto } from './dtos/inventory.dto';
-import { InventoryInDto } from './dtos/inventory-in.dto';
-import { InventoryOutDto } from './dtos/inventory-out.dto';
 
-@ApiTags('inventory-movements')
+@ApiTags('Inventory Movements')
 @Controller('inventory-movements')
 @UseGuards(JwtAuthGuard, RoleGuard)
 export class InventoryController {

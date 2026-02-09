@@ -51,7 +51,6 @@ describe('App Integration (e2e)', () => {
 
   describe('Full auth flow', () => {
     it('should login → get profile → access protected endpoints', async () => {
-      // Login
       const loginRes = await request(app.getHttpServer())
         .post('/api/auth/login')
         .send({
@@ -62,16 +61,14 @@ describe('App Integration (e2e)', () => {
 
       const token = extractData(loginRes).accessToken;
 
-      // Get profile
       const profileRes = await request(app.getHttpServer())
-        .get('/api/auth/me')
+        .get('/api/profile')
         .set('Authorization', `Bearer ${token}`)
         .expect(200);
 
       const profile = extractData(profileRes);
       expect(profile).toHaveProperty('role', 'ADMIN');
 
-      // Access protected endpoint (inventory)
       const listRes = await request(app.getHttpServer())
         .get('/api/products')
         .expect(200);

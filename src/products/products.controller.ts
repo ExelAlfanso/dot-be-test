@@ -28,7 +28,7 @@ import {
   NotFoundResponseDto,
 } from 'src/common/dtos/error-response.dto';
 
-@ApiTags('products')
+@ApiTags('Products')
 @Controller('products')
 export class ProductsController {
   constructor(private productsService: ProductsService) {}

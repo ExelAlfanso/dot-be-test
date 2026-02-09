@@ -1,26 +1,8 @@
-import {
-  Body,
-  Controller,
-  Request,
-  Get,
-  Post,
-  UseGuards,
-  HttpCode,
-  HttpStatus,
-} from '@nestjs/common';
+import { Body, Controller, Post, HttpCode, HttpStatus } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
-import { RoleGuard } from './role/role.guard';
 import { RegisterDto } from './dtos/register.dto';
 import { LoginDto } from './dtos/login.dto';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
-import { Roles } from './role/roles.decorator';
-import { ProfileDto } from './dtos/profile.dto';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   RegisterResponseDto,
   LoginResponseDto,
@@ -30,7 +12,7 @@ import {
   UnauthorizedResponseDto,
 } from 'src/common/dtos/error-response.dto';
 
-@ApiTags('auth')
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -57,7 +39,7 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Login user' })
+  @ApiOperation({ summary: 'Login user/admin' })
   @ApiResponse({
     status: 200,
     description: 'Returns JWT access token',
@@ -70,24 +52,5 @@ export class AuthController {
   })
   async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto.email, loginDto.password);
-  }
-
-  @Get('me')
-  @UseGuards(JwtAuthGuard, RoleGuard)
-  @Roles('USER', 'ADMIN')
-  @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Get current user profile' })
-  @ApiResponse({
-    status: 200,
-    description: 'Returns user profile',
-    type: ProfileDto,
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized',
-    type: UnauthorizedResponseDto,
-  })
-  async getProfile(@Request() req): Promise<ProfileDto> {
-    return req.user;
   }
 }

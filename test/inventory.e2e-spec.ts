@@ -41,11 +41,9 @@ describe('Inventory Movements (e2e)', () => {
 
     await app.init();
 
-    // login
     adminToken = await loginAs('admin@test.com', 'admin123');
     userToken = await loginAs('user@test.com', 'password123');
 
-    // seed product
     const productRes = await request(app.getHttpServer())
       .post('/api/products')
       .set('Authorization', `Bearer ${adminToken}`)
@@ -65,8 +63,6 @@ describe('Inventory Movements (e2e)', () => {
 
   describe('POST /api/inventory-movements', () => {
     it('ADMIN can add IN movement', async () => {
-      // Get first product
-
       const response = await request(app.getHttpServer())
         .post('/api/inventory-movements')
         .set('Authorization', `Bearer ${adminToken}`)

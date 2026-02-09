@@ -75,14 +75,12 @@ describe('Products (e2e)', () => {
 
   describe('PATCH /api/products/:id (ownership enforcement)', () => {
     it('should allow ADMIN to update seeded admin product', async () => {
-      // Mechanical Keyboard is created by admin (user2)
       const listRes = await request(app.getHttpServer()).get('/api/products');
       const products = extractData(listRes);
       const adminProduct = products.find(
         (p) => p.name === 'Mechanical Keyboard',
       );
 
-      // ADMIN updates their product
       const updateRes = await request(app.getHttpServer())
         .patch(`/api/products/${adminProduct.id}`)
         .set('Authorization', `Bearer ${adminToken}`)
@@ -94,14 +92,12 @@ describe('Products (e2e)', () => {
     });
 
     it('should prevent USER from updating ADMIN product', async () => {
-      // Mechanical Keyboard is created by admin (user2)
       const listRes = await request(app.getHttpServer()).get('/api/products');
       const products = extractData(listRes);
       const adminProduct = products.find(
         (p) => p.name === 'Mechanical Keyboard',
       );
 
-      // USER tries to update admin product
       await request(app.getHttpServer())
         .patch(`/api/products/${adminProduct.id}`)
         .set('Authorization', `Bearer ${userToken}`)
@@ -127,14 +123,12 @@ describe('Products (e2e)', () => {
   });
   describe('DELETE /api/products/:id (ownership enforcement)', () => {
     it('should prevent USER from deleting ADMIN product', async () => {
-      // Mechanical Keyboard is created by admin (user2)
       const listRes = await request(app.getHttpServer()).get('/api/products');
       const products = extractData(listRes);
       const adminProduct = products.find(
         (p) => p.name === 'Mechanical Keyboard',
       );
 
-      // USER tries to delete admin product
       await request(app.getHttpServer())
         .delete(`/api/products/${adminProduct.id}`)
         .set('Authorization', `Bearer ${userToken}`)

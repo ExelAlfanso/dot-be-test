@@ -5,30 +5,27 @@ import { Pool } from 'pg';
 import * as bcrypt from 'bcrypt';
 
 const pool = new Pool({
-  connectionString: process.env.DIRECT_URL,
+  connectionString: process.env.DATABASE_URL,
 });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
   try {
-    console.log('🔄 Connecting to database...');
+    console.log('Connecting to database...');
 
-    // Delete existing data (in correct order due to foreign keys)
     await prisma.inventoryMovement.deleteMany();
-    console.log('✅ Old inventory movements deleted');
+    console.log('Old inventory movements deleted');
 
     await prisma.product.deleteMany();
-    console.log('✅ Old products deleted');
+    console.log('Old products deleted');
 
     await prisma.user.deleteMany();
-    console.log('✅ Old users deleted');
+    console.log('Old users deleted');
 
-    // Hash passwords
     const hashedPassword1 = await bcrypt.hash('password123', 10);
     const hashedPassword2 = await bcrypt.hash('admin123', 10);
 
-    // Create dummy users
     const user1 = await prisma.user.create({
       data: {
         email: 'user@test.com',
@@ -47,9 +44,8 @@ async function main() {
       },
     });
 
-    console.log('✅ Users created');
+    console.log('Users created');
 
-    // Create dummy products
     const products = await prisma.product.createMany({
       data: [
         {
@@ -112,9 +108,8 @@ async function main() {
       ],
     });
 
-    console.log('✅ Products created');
+    console.log('Products created');
 
-    // Get created products for inventory movements
     const laptop = await prisma.product.findFirst({
       where: { name: 'Laptop Pro 15"' },
     });
@@ -128,17 +123,15 @@ async function main() {
       where: { name: '4K Monitor 27"' },
     });
 
-    // Create inventory movements (realistic scenario)
     await prisma.inventoryMovement.createMany({
       data: [
-        // Initial stock received from supplier
         {
           productId: laptop.id,
           type: 'IN',
           quantity: 30,
           reference: 'PO-2024-001',
           note: 'Initial stock delivery',
-          createdBy: user2.id, // Admin receives stock
+          createdBy: user2.id,
         },
         {
           productId: mouse.id,
@@ -156,14 +149,13 @@ async function main() {
           note: 'Backorder arrival',
           createdBy: user2.id,
         },
-        // Customer orders (OUT)
         {
           productId: laptop.id,
           type: 'OUT',
           quantity: 5,
           reference: 'ORDER-12345',
           note: 'Customer shipment',
-          createdBy: user1.id, // User processes order
+          createdBy: user1.id,
         },
         {
           productId: mouse.id,
@@ -181,14 +173,13 @@ async function main() {
           note: 'Retail order fulfillment',
           createdBy: user1.id,
         },
-        // Stock adjustment (damaged/lost items)
         {
           productId: monitor.id,
           type: 'ADJUSTMENT',
           quantity: -5,
           reference: 'ADJ-2024-001',
           note: 'Damaged items from shipping',
-          createdBy: user2.id, // Only admin can adjust
+          createdBy: user2.id,
         },
         {
           productId: laptop.id,
@@ -201,22 +192,22 @@ async function main() {
       ],
     });
 
-    console.log('✅ Inventory movements created');
+    console.log('Inventory movements created');
 
-    console.log('✅ Seed data created:');
+    console.log('Seed data created:');
     console.log('Users:', { user1, user2 });
     console.log(`Products: ${products.count} items created`);
-    console.log('\n📝 Test Credentials:');
+    console.log('\nTest Credentials:');
     console.log('User: user@test.com / password123');
     console.log('Admin: admin@test.com / admin123');
-    console.log('\n📦 Product Summary:');
+    console.log('\nProduct Summary:');
     console.log(`- User created: 4 products`);
     console.log(`- Admin created: 4 products`);
     console.log('\nInventory Movements:');
     console.log('- 3x IN (stock received from suppliers)');
     console.log('- 3x OUT (customer orders)');
     console.log('- 2x ADJUSTMENT (warehouse corrections)');
-    console.log('\n🔍 To test inventory management:');
+    console.log('\nTo test inventory management:');
     console.log('1. Login to get access token');
     console.log('2. Get product IDs from GET /api/products');
     console.log(
@@ -224,7 +215,7 @@ async function main() {
     );
     console.log('4. Test movements: POST /api/inventory-movements');
   } catch (error) {
-    console.error('❌ Error seeding database:', error);
+    console.error('Error seeding database:', error);
     throw error;
   }
 }
@@ -232,7 +223,7 @@ async function main() {
 main()
   .then(async () => {
     await prisma.$disconnect();
-    console.log('\n✅ Seed completed successfully!');
+    console.log('\nSeed completed successfully!');
   })
   .catch(async (e) => {
     console.error(e);
