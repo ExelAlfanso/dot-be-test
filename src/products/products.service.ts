@@ -64,6 +64,9 @@ export class ProductsService {
 
   async update(id: string, userId: string, updateProductDto: UpdateProductDto) {
     const product = await this.findOne(id);
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
     if (product.createdBy !== userId) {
       throw new ForbiddenException('You can only delete your own products');
     }
@@ -83,6 +86,9 @@ export class ProductsService {
   }
   async remove(id: string, userId: string) {
     const product = await this.findOne(id);
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
     if (product.createdBy !== userId) {
       throw new ForbiddenException('You can only delete your own products');
     }

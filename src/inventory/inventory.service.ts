@@ -64,6 +64,20 @@ export class InventoryService {
     }
 
     return this.prisma.$transaction(async (tx) => {
+      const updateResult = await tx.product.updateMany({
+        where: {
+          id: dto.productId,
+          stock: { gte: dto.quantity },
+        },
+        data: { stock: { decrement: dto.quantity } },
+      });
+
+      if (updateResult.count === 0) {
+        throw new BadRequestException(
+          `Insufficient stock. Available: ${product.stock}, Requested: ${dto.quantity}`,
+        );
+      }
+
       const movement = await tx.inventoryMovement.create({
         data: {
           productId: dto.productId,
@@ -74,9 +88,8 @@ export class InventoryService {
         },
       });
 
-      const updatedProduct = await tx.product.update({
+      const updatedProduct = await tx.product.findUnique({
         where: { id: dto.productId },
-        data: { stock: { decrement: dto.quantity } },
       });
 
       return { ...movement, product: updatedProduct };
@@ -91,6 +104,11 @@ export class InventoryService {
       throw new NotFoundException('Product not found');
     }
     const newStock = product.stock + dto.quantity;
+    if (newStock < 0) {
+      throw new BadRequestException(
+        `Insufficient stock. Available: ${product.stock}, Requested adjustment: ${dto.quantity}`,
+      );
+    }
 
     return this.prisma.$transaction(async (tx) => {
       const movement = await tx.inventoryMovement.create({

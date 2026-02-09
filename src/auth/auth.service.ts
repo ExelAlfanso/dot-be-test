@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -44,7 +45,7 @@ export class AuthService {
   ): Promise<{ accessToken: string }> {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new NotFoundException("User doesn't exist");
     }
     const isPasswordValid = await this.comparePasswords(
       password,
