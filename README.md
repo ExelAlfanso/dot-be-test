@@ -1,98 +1,217 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# End-to-End Testing
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This directory contains comprehensive e2e tests for the NestJS Inventory Management System.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Test Files
 
-## Description
+### `auth.e2e-spec.ts`
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Tests authentication functionality:
 
-## Project setup
+- **POST /api/auth/register**: User registration with validation
+  - Valid registration
+  - Invalid email format
+  - Weak password validation
+  - Short username validation
+  - Duplicate email prevention
+  - Extra fields rejection
+- **POST /api/auth/login**: User authentication
+  - Successful login
+  - Wrong password handling
+  - Non-existent user handling
+  - Invalid email format
+
+### `profile.e2e-spec.ts`
+
+Tests profile management functionality:
+
+- **GET /api/profile**: User profile retrieval
+  - USER role profile
+  - ADMIN role profile
+  - Missing token handling
+- **PATCH /api/profile**: Update current user profile
+  - Update username
+  - Update email
+  - Update password
+  - Duplicate email/username handling
+  - Missing token handling
+
+### `products.e2e-spec.ts`
+
+Tests product management functionality:
+
+- **POST /api/products**: Create products
+  - Successful creation with all fields
+  - Creation with optional fields omitted
+  - Authentication requirement
+  - Missing required fields validation
+  - Invalid data types handling
+  - Stock maximum validation
+- **GET /api/products**: List all products
+  - Retrieved without authentication
+  - Empty array when no products exist
+- **GET /api/products/:id**: Get single product
+  - Successful retrieval
+  - 404 for non-existent product
+- **PATCH /api/products/:id**: Update product
+  - Update own product successfully
+  - Update single field only
+  - Ownership validation (cannot update other user's product)
+  - Authentication requirement
+  - 404 for non-existent product
+- **DELETE /api/products/:id**: Delete product
+  - Delete own product successfully
+  - Ownership validation (cannot delete other user's product)
+  - Authentication requirement
+  - 404 for non-existent product
+
+### `inventory.e2e-spec.ts`
+
+Tests inventory management functionality:
+
+- **POST /api/inventory/in**: Add inventory stock
+  - ADMIN can add inventory
+  - With and without optional reference
+  - USER forbidden (403)
+  - Non-existent product (404)
+  - Invalid quantity validation
+  - Missing required fields
+- **POST /api/inventory/out**: Remove inventory stock
+  - ADMIN can remove inventory
+  - Insufficient stock validation (400)
+  - USER forbidden (403)
+  - Authentication requirement
+- **POST /api/inventory/adjustment**: Adjust inventory
+  - ADMIN can adjust inventory
+  - Required reason field validation
+  - USER forbidden (403)
+  - Authentication requirement
+- **GET /api/inventory/product/:productId**: Get inventory history
+  - Both USER and ADMIN can view
+  - Empty array for product with no movements
+  - 404 for non-existent product
+  - Authentication requirement
+- **Stock Integration**: End-to-end stock calculation
+  - Verifies stock updates correctly after multiple operations
+
+### `app.e2e-spec.ts`
+
+Integration tests covering complete user journeys:
+
+- **Complete User Journey**: Full workflow from registration to inventory management
+  - Register → Login → Create Product → Upgrade to ADMIN → Add Inventory → View History
+- **Multi-User Ownership**: Product ownership enforcement
+  - Multiple users creating products
+  - Cannot update/delete other users' products
+  - Ownership validation across users
+- **Role-Based Access Control**: RBAC enforcement
+  - USER can view inventory but cannot modify
+  - ADMIN has full inventory permissions
+  - All inventory operations (IN/OUT/ADJUSTMENT) restricted to ADMIN
+
+## Design Patterns
+
+### Role-Based Access Control (RBAC) with Decorator Pattern
+
+This project implements **Role-Based Access Control (RBAC)** combined with the **Decorator Pattern** as the primary architectural pattern for authorization.
+
+**Pattern Overview:**
+
+- Custom `@Roles()` decorator marks which roles are allowed to access specific endpoints
+- Custom `RoleGuard` intercepts requests and validates user roles before controller methods execute
+- Roles are stored in the JWT token and checked on each protected request
+
+**Why This Pattern?**
+
+1.  **Separation of Concerns**: Authorization logic is decoupled from business logic, making controllers cleaner and more maintainable
+2.  **Reusability**: The same decorators and guards can be applied to any endpoint without code duplication
+3.  **Flexibility**: New roles can be added easily without modifying existing guard implementations
+4.  **Declarative Syntax**: The `@Roles('ADMIN')` syntax is expressive and immediately shows endpoint requirements
+5.  **Scalability**: As the application grows, RBAC provides a consistent and unified authorization approach for all endpoints
+
+**Implementation Details:**
+
+- `@Roles()` decorator defined in `src/auth/role/roles.decorator.ts`
+- `RoleGuard` implemented in `src/auth/role/role.guard.ts`
+- Guards are applied globally or per-route to protect sensitive operations
+- Ensures only authorized users can perform inventory modifications, product updates, and administrative tasks
+
+This pattern is critical for security in the Inventory Management System, where different user roles (USER vs ADMIN) have different permissions for product management and inventory operations.
+
+## Running Tests
+
+### Run all e2e tests:
 
 ```bash
-$ npm install
+npm run test:e2e
 ```
 
-## Compile and run the project
+### Run specific test file:
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm run test:e2e -- auth.e2e-spec.ts
+npm run test:e2e -- products.e2e-spec.ts
+npm run test:e2e -- inventory.e2e-spec.ts
+npm run test:e2e -- app.e2e-spec.ts
 ```
 
-## Run tests
+### Run with coverage:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm run test:cov
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### Run in watch mode:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm run test:watch
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## Test Coverage
 
-## Resources
+The test suite covers:
 
-Check out a few resources that may come in handy when working with NestJS:
+- **Authentication**: Registration, login, JWT tokens, role assignment
+- **Authorization**: Role-based access control (USER vs ADMIN)
+- **Validation**: DTO validation, data types, required fields
+- **Ownership**: User-product ownership enforcement
+- **Inventory**: Stock management (IN/OUT/ADJUSTMENT)
+- **Error Handling**: 400, 401, 403, 404 responses
+- **Integration**: Complete workflows and multi-user scenarios
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## Test Structure
 
-## Support
+Each test file follows this structure:
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+1. **Setup**: Initialize NestJS app with global pipes and prefix
+2. **BeforeEach**: Clean database and create test users/data
+3. **Tests**: Organized by endpoint and functionality
+4. **Assertions**: Verify responses, status codes, and data structure
+5. **Cleanup**: Disconnect Prisma and close app
 
-## Stay in touch
+## Database Considerations
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+- Tests use the same database as development (consider setting up a separate test database)
+- Each test cleans up data in `beforeEach` to ensure isolation
+- Database is cleaned in this order to respect foreign key constraints:
+  1. InventoryMovement
+  2. Product
+  3. User
 
-## License
+## Best Practices Used
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+- Clear describe/it blocks with descriptive names
+- Database cleanup between tests for isolation
+- Consistent test structure across all test files
+- Testing both success and error cases
+- Verifying response structure and data integrity
+- Testing edge cases (empty arrays, missing fields, invalid data)
+- Authentication/authorization validation
+- Integration tests for complete workflows
+
+## Notes
+
+- Tests require a running PostgreSQL database (Supabase)
+- Environment variables must be set (DATABASE_URL, JWT_SECRET)
+- bcrypt is used for password hashing in test setup
+- All tests use the `/api` prefix as configured in main.ts
