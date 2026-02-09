@@ -38,6 +38,7 @@ model InventoryMovement {
   quantity  Int
   reference String?
   createdBy String
+  note      String?
   user      User          @relation(fields: [createdBy], references: [id])
   createdAt DateTime      @default(now())
 }

@@ -137,6 +137,7 @@ async function main() {
           type: 'IN',
           quantity: 30,
           reference: 'PO-2024-001',
+          note: 'Initial stock delivery',
           createdBy: user2.id, // Admin receives stock
         },
         {
@@ -144,6 +145,7 @@ async function main() {
           type: 'IN',
           quantity: 200,
           reference: 'PO-2024-001',
+          note: 'Restock shipment',
           createdBy: user2.id,
         },
         {
@@ -151,6 +153,7 @@ async function main() {
           type: 'IN',
           quantity: 100,
           reference: 'PO-2024-002',
+          note: 'Backorder arrival',
           createdBy: user2.id,
         },
         // Customer orders (OUT)
@@ -159,6 +162,7 @@ async function main() {
           type: 'OUT',
           quantity: 5,
           reference: 'ORDER-12345',
+          note: 'Customer shipment',
           createdBy: user1.id, // User processes order
         },
         {
@@ -166,6 +170,7 @@ async function main() {
           type: 'OUT',
           quantity: 50,
           reference: 'ORDER-12346',
+          note: 'Bulk order dispatch',
           createdBy: user1.id,
         },
         {
@@ -173,6 +178,7 @@ async function main() {
           type: 'OUT',
           quantity: 25,
           reference: 'ORDER-12347',
+          note: 'Retail order fulfillment',
           createdBy: user1.id,
         },
         // Stock adjustment (damaged/lost items)
@@ -180,14 +186,16 @@ async function main() {
           productId: monitor.id,
           type: 'ADJUSTMENT',
           quantity: -5,
-          reference: 'Damaged items from shipping',
+          reference: 'ADJ-2024-001',
+          note: 'Damaged items from shipping',
           createdBy: user2.id, // Only admin can adjust
         },
         {
           productId: laptop.id,
           type: 'ADJUSTMENT',
           quantity: 3,
-          reference: 'Found in warehouse during inventory check',
+          reference: 'ADJ-2024-002',
+          note: 'Found in warehouse during inventory check',
           createdBy: user2.id,
         },
       ],
@@ -204,17 +212,17 @@ async function main() {
     console.log('\n📦 Product Summary:');
     console.log(`- User created: 4 products`);
     console.log(`- Admin created: 4 products`);
-    console.log('\n� Inventory Movements:');
+    console.log('\nInventory Movements:');
     console.log('- 3x IN (stock received from suppliers)');
     console.log('- 3x OUT (customer orders)');
     console.log('- 2x ADJUSTMENT (warehouse corrections)');
     console.log('\n🔍 To test inventory management:');
     console.log('1. Login to get access token');
     console.log('2. Get product IDs from GET /api/products');
-    console.log('3. View history: GET /api/inventory/product/:productId');
     console.log(
-      '4. Test movements: POST /api/inventory/in or /out or /adjustment',
+      '3. View history: GET /api/inventory-movements/product/:productId',
     );
+    console.log('4. Test movements: POST /api/inventory-movements');
   } catch (error) {
     console.error('❌ Error seeding database:', error);
     throw error;

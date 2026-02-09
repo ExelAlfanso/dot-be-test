@@ -1,25 +1,93 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import 'dotenv/config';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { Test } from '@nestjs/testing';
 import request from 'supertest';
-import { App } from 'supertest/types';
-import { AppModule } from './../src/app.module';
+import { AppModule } from '../src/app.module';
+import { TransformInterceptor } from '../src/interceptors/transform.intercepter';
 
-describe('AppController (e2e)', () => {
-  let app: INestApplication<App>;
+describe('App Integration (e2e)', () => {
+  let app: INestApplication;
 
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
+  const extractData = (response: request.Response) =>
+    response.body?.data ?? response.body;
+
+  beforeAll(async () => {
+    const moduleFixture = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.setGlobalPrefix('api');
+    app.useGlobalInterceptors(new TransformInterceptor());
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+      }),
+    );
+
     await app.init();
   });
 
-  it('/ (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
+  afterAll(async () => {
+    await app.close();
+  });
+
+  describe('Basic endpoints', () => {
+    it('GET /hello should return 200', async () => {
+      await request(app.getHttpServer()).get('/api/hello').expect(200);
+    });
+
+    it('should access public product list', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/products')
+        .expect(200);
+
+      const data = extractData(response);
+      expect(Array.isArray(data)).toBe(true);
+    });
+  });
+
+  describe('Full auth flow', () => {
+    it('should login → get profile → access protected endpoints', async () => {
+      // Login
+      const loginRes = await request(app.getHttpServer())
+        .post('/api/auth/login')
+        .send({
+          email: 'admin@test.com',
+          password: 'admin123',
+        })
+        .expect(200);
+
+      const token = extractData(loginRes).accessToken;
+
+      // Get profile
+      const profileRes = await request(app.getHttpServer())
+        .get('/api/auth/me')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+
+      const profile = extractData(profileRes);
+      expect(profile).toHaveProperty('role', 'ADMIN');
+
+      // Access protected endpoint (inventory)
+      const listRes = await request(app.getHttpServer())
+        .get('/api/products')
+        .expect(200);
+
+      const products = extractData(listRes);
+      const firstProductId = products[0]?.id;
+
+      if (firstProductId) {
+        const movementsRes = await request(app.getHttpServer())
+          .get(`/api/inventory-movements/product/${firstProductId}`)
+          .set('Authorization', `Bearer ${token}`)
+          .expect(200);
+
+        const movements = extractData(movementsRes);
+        expect(Array.isArray(movements)).toBe(true);
+      }
+    });
   });
 });

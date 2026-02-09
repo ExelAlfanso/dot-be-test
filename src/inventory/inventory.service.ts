@@ -34,15 +34,14 @@ export class InventoryService {
           reference: dto.reference,
           createdBy: userId,
         },
-        include: { product: true },
       });
 
-      await tx.product.update({
+      const updatedProduct = await tx.product.update({
         where: { id: dto.productId },
         data: { stock: { increment: dto.quantity } },
       });
 
-      return movement;
+      return { ...movement, product: updatedProduct };
     });
   }
 
@@ -73,15 +72,14 @@ export class InventoryService {
           reference: dto.reference,
           createdBy: userId,
         },
-        include: { product: true },
       });
 
-      await tx.product.update({
+      const updatedProduct = await tx.product.update({
         where: { id: dto.productId },
         data: { stock: { decrement: dto.quantity } },
       });
 
-      return movement;
+      return { ...movement, product: updatedProduct };
     });
   }
   async adjustInventory(dto: InventoryOutDto, userId: string) {
@@ -103,15 +101,14 @@ export class InventoryService {
           reference: dto.reference,
           createdBy: userId,
         },
-        include: { product: true },
       });
 
-      await tx.product.update({
+      const updatedProduct = await tx.product.update({
         where: { id: dto.productId },
         data: { stock: newStock },
       });
 
-      return movement;
+      return { ...movement, product: updatedProduct };
     });
   }
 
