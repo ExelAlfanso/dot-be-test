@@ -32,8 +32,8 @@ model Product {
 
 model InventoryMovement {
   id        String        @id @default(uuid())
-  product   Product       @relation(fields: [productId], references: [id])
-  productId String
+  product   Product?      @relation(fields: [productId], references: [id])
+  productId String?
   type      InventoryType
   quantity  Int
   reference String?

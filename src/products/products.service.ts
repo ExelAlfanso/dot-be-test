@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -112,6 +113,16 @@ export class ProductsService {
     if (userRole !== 'ADMIN' && product.createdBy !== userId) {
       throw new ForbiddenException('You can only delete your own products');
     }
+    const inventoryCount = await this.prisma.inventoryMovement.count({
+      where: { productId: id },
+    });
+
+    if (inventoryCount > 0) {
+      throw new BadRequestException(
+        `Cannot delete product with existing inventory movements. Found ${inventoryCount} movement(s).`,
+      );
+    }
+
     return this.prisma.product.delete({
       where: { id },
     });

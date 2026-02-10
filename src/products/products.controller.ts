@@ -141,9 +141,9 @@ export class ProductsController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RoleGuard)
-  @Roles('ADMIN')
+  @Roles('USER', 'ADMIN')
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Delete product (ADMIN only)' })
+  @ApiOperation({ summary: 'Delete product' })
   @ApiResponse({
     status: 200,
     description: 'Product successfully deleted',
@@ -153,6 +153,10 @@ export class ProductsController {
     status: 401,
     description: 'Unauthorized',
     type: UnauthorizedResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request - Cannot delete product with inventory movements',
   })
   @ApiResponse({
     status: 403,

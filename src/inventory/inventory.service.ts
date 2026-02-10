@@ -17,6 +17,9 @@ export class InventoryService {
     if (!product) {
       throw new NotFoundException('Product not found');
     }
+    if (dto.quantity <= 0) {
+      throw new BadRequestException('Quantity must be greater than zero');
+    }
 
     return this.prisma.$transaction(async (tx) => {
       const movement = await tx.inventoryMovement.create({
@@ -76,10 +79,15 @@ export class InventoryService {
           createdBy: userId,
         },
       });
-
+      const newStock = product.stock - dto.quantity;
+      if (newStock < 0) {
+        throw new BadRequestException(
+          `Insufficient stock. Available: ${product.stock}, Requested: ${dto.quantity}`,
+        );
+      }
       const updatedProduct = await tx.product.update({
         where: { id: dto.productId },
-        data: { stock: { decrement: dto.quantity } },
+        data: { stock: newStock },
       });
 
       return { ...movement, product: updatedProduct };
