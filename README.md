@@ -129,12 +129,12 @@ Tests product management functionality:
 - **PATCH /api/products/:id**: Update product
   - Update own product successfully
   - Update single field only
-  - Ownership validation (cannot update other user's product)
+  - Ownership validation (cannot update other user's product except admin)
   - Authentication requirement
   - 404 for non-existent product
 - **DELETE /api/products/:id**: Delete product
   - Delete own product successfully
-  - Ownership validation (cannot delete other user's product)
+  - Ownership validation (cannot delete other user's product except admin)
   - Authentication requirement
   - 404 for non-existent product
 

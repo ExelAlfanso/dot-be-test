@@ -103,7 +103,7 @@ export class ProductsController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RoleGuard)
-  @Roles('ADMIN')
+  @Roles('USER', 'ADMIN')
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Update product (ADMIN only)' })
   @ApiResponse({
@@ -131,7 +131,12 @@ export class ProductsController {
     @Request() req,
     @Body() updateProductDto: UpdateProductDto,
   ) {
-    return this.productsService.update(id, req.user.userId, updateProductDto);
+    return this.productsService.update(
+      id,
+      req.user.userId,
+      req.user.role,
+      updateProductDto,
+    );
   }
 
   @Delete(':id')
@@ -160,6 +165,6 @@ export class ProductsController {
     type: NotFoundResponseDto,
   })
   remove(@Param('id') id: string, @Request() req) {
-    return this.productsService.remove(id, req.user.userId);
+    return this.productsService.remove(id, req.user.userId, req.user.role);
   }
 }

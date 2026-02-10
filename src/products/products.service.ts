@@ -80,13 +80,15 @@ export class ProductsService {
     return product;
   }
 
-  async update(id: string, userId: string, updateProductDto: UpdateProductDto) {
+  async update(
+    id: string,
+    userId: string,
+    userRole: string,
+    updateProductDto: UpdateProductDto,
+  ) {
     const product = await this.findOne(id);
-    if (!product) {
-      throw new NotFoundException('Product not found');
-    }
-    if (product.createdBy !== userId) {
-      throw new ForbiddenException('You can only delete your own products');
+    if (userRole !== 'ADMIN' && product.createdBy !== userId) {
+      throw new ForbiddenException('You can only update your own products');
     }
     return this.prisma.product.update({
       where: { id },
@@ -102,12 +104,12 @@ export class ProductsService {
       },
     });
   }
-  async remove(id: string, userId: string) {
+  async remove(id: string, userId: string, userRole: string) {
     const product = await this.findOne(id);
     if (!product) {
       throw new NotFoundException('Product not found');
     }
-    if (product.createdBy !== userId) {
+    if (userRole !== 'ADMIN' && product.createdBy !== userId) {
       throw new ForbiddenException('You can only delete your own products');
     }
     return this.prisma.product.delete({
